@@ -124,6 +124,8 @@ A panel plot containing a time series plot (i.e. type = "1") of the 5-minute int
 graph <- activity2 %>% group_by(interval, daytype) %>% summarise(steps = mean(steps))
 ggplot(data = graph, aes(x = interval, y = steps)) +
   ggtitle("Weekday vs Weekend (Average Steps)") +
+  xlab("5 min Intervals") +
+  ylab("Average Steps") +
   facet_grid(daytype ~ .) +
   geom_line(color = "steelblue")
   

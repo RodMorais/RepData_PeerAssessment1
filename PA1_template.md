@@ -24,38 +24,39 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 ## Loading and preprocessing the data
 
-```{r load-packages, include=FALSE}
-library(dplyr)
-library(ggplot2)
-library(knitr)
-```
 
-```{r}
+
+
+```r
 activity = read.csv("activity.csv", header = TRUE, colClasses = c("numeric", "Date", "numeric")) # loading data into memory
-
 ```
 
 ## What is mean total number of steps taken per day?
 
-```{r}
+
+```r
 stepsperday <- aggregate(steps ~ date, activity, sum)
 hist(stepsperday$steps, main = "Steps per day", xlab = "Steps", col = "blue", breaks = 8)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)<!-- -->
+
 Calculating the mean and median of steps taken per day:  
 
-```{r}
+
+```r
 meansteps <- as.character(round(mean(stepsperday$steps)))
 mediansteps <- as.character(round(median(stepsperday$steps)))
 ```
 
-The mean and median total number of steps taken per day respectively: **`r meansteps`** and **`r mediansteps`**  
+The mean and median total number of steps taken per day respectively: **10766** and **10765**  
 
 ## What is the average daily activity pattern?
 
 Make a time series plot (i.e. **type = "1"**) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)  
 
-```{r}
+
+```r
 stepsinterval <- aggregate(steps ~ interval, activity, mean) # data aggregation
 plot(stepsinterval$interval, stepsinterval$steps, # plotting
      type="l",
@@ -63,55 +64,64 @@ plot(stepsinterval$interval, stepsinterval$steps, # plotting
      xlab = "5 min interval", 
      ylab = "Average steps", 
      col = "red")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
 Calculating the maximum number of steps on a 5 min interval
 
-```{r}
+
+```r
 maxsteps <- stepsinterval$interval[which.max(stepsinterval$steps)]
 ```
 
-On average across all the days in the dataset, the maximum number of steps on a 5 min interval: **`r maxsteps`**  
+On average across all the days in the dataset, the maximum number of steps on a 5 min interval: **835**  
 
 ## Imputing missing values
 Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with _NA_)
 
-```{r}
+
+```r
 missing <- nrow(activity[is.na(activity$steps),]) # total of NA values
 percent <- scales::percent(missing / nrow(activity))
 ```
 
-Total number of missing values in the dataset is **`r missing`** which represents **`r percent`** of total.  
+Total number of missing values in the dataset is **2304** which represents **13%** of total.  
 
 Let's create a new dataset and assume _NA_ values equal to zero.
 
-```{r}
+
+```r
 activity2 <- activity
 activity2[is.na(activity2$steps), "steps"] <- 0
 ```
 
 Now let's redo the first graph with these new data
 
-```{r}
+
+```r
 stepsperday2 <- aggregate(steps ~ date, activity2, sum)
 hist(stepsperday2$steps, main = "Steps per day", xlab = "Steps", col = "blue", breaks = 8)
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
 Calculating the mean and median of steps taken per day:  
 
-```{r}
+
+```r
 meansteps2 <- as.character(round(mean(stepsperday2$steps)))
 mediansteps2 <- as.character(round(median(stepsperday2$steps)))
 ```
 
-The mean and median total number of steps taken per day  are now respectively: **`r meansteps2`** and **`r mediansteps2`**, which differs from previous values (**`r meansteps`** and **`r mediansteps`**).  
+The mean and median total number of steps taken per day  are now respectively: **9354** and **10395**, which differs from previous values (**10766** and **10765**).  
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Creating a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day
-```{r}
+
+```r
 activity2$daytype <- ifelse(weekdays(activity2$date) %in% 
     c("Satuday", "Sunday"), "weekend", "weekday")
 ```
@@ -119,13 +129,20 @@ activity2$daytype <- ifelse(weekdays(activity2$date) %in%
 A panel plot containing a time series plot (i.e. type = "1") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
 
-```{r}
 
+```r
 graph <- activity2 %>% group_by(interval, daytype) %>% summarise(steps = mean(steps))
-ggplot(data = graph, aes(x = interval, y = steps)) +
-  ggtitle("Weekday vs Weekend (Average Steps)") +
-  facet_grid(daytype ~ .) +
-  geom_line(color = "steelblue")
-  
 ```
-It seems that during weekends people tend to start exercizing later in the day, while during the week they exercize more early morning.
+
+```
+## `summarise()` regrouping output by 'interval' (override with `.groups` argument)
+```
+
+```r
+ggplot(data = graph, aes(x = interval, y = steps)) +
+  facet_grid(daytype ~ .) +
+  geom_line(color = "steelblue") +
+  ggtitle("Weekday vs. Weekend (Average Steps)")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
